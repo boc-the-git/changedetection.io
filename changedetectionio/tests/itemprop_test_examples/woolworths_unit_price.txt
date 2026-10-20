@@ -1,0 +1,39 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "@id": "https://www.woolworths.com.au/shop/productdetails/321601/test-product",
+  "image": "https://cdn0.woolworths.media/content/wowproductimages/large/321601.jpg",
+  "name": "Test Product With Unit Pricing",
+  "description": "Test product with unit pricing",
+  "sku": 321601,
+  "gtin": "9999999999999",
+  "brand": {
+    "@type": "Organization",
+    "name": "Test Brand"
+  },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "AUD",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "https://schema.org/InStock",
+    "url": "https://www.woolworths.com.au/shop/productdetails/321601/test-product",
+    "seller": {
+      "@type": "Organization",
+      "name": "Woolworths"
+    },
+    "price": 155.55,
+    "potentialAction": {
+      "@context": "https://schema.org",
+      "@type": "BuyAction"
+    },
+    "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "priceType": "https://schema.org/ListPrice",
+      "price": 5.18,
+      "priceCurrency": "AUD",
+      "unitText": "100G"
+    }
+  }
+}
+</script>

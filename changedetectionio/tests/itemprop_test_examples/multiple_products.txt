@@ -1,0 +1,44 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Main Product - Arnott's Shapes Crackers",
+  "description": "Delicious crackers",
+  "offers": {
+    "@type": "Offer",
+    "price": 155.55,
+    "priceCurrency": "AUD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Related Product 1",
+  "description": "Another product",
+  "offers": {
+    "@type": "Offer",
+    "price": 299.99,
+    "priceCurrency": "AUD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Related Product 2",
+  "description": "Yet another product",
+  "offers": {
+    "@type": "Offer",
+    "price": 399.99,
+    "priceCurrency": "AUD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>

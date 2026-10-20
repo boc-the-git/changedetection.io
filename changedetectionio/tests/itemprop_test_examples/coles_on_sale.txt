@@ -1,0 +1,40 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "@id": "https://www.coles.com.au/product/test-product-on-sale",
+  "image": "https://shop.coles.com.au/wcsstore/Coles-CAS/images/test.jpg",
+  "name": "Test Product On Sale",
+  "description": "Test product with sale pricing",
+  "sku": 1234567,
+  "gtin": "9999999999999",
+  "brand": {
+    "@type": "Brand",
+    "name": "Test Brand"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "priceCurrency": "AUD",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.coles.com.au/product/test-product-on-sale",
+      "seller": {
+        "@type": "Organization",
+        "name": "Coles"
+      },
+      "price": 155.55,
+      "potentialAction": {
+        "@context": "https://schema.org",
+        "@type": "BuyAction"
+      },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "priceType": "https://schema.org/ListPrice",
+        "price": 200.00,
+        "priceCurrency": "AUD"
+      }
+    }
+  ]
+}
+</script>

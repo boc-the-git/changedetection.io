@@ -26,6 +26,55 @@ def _search_prop_by_value(matches, value):
             if value in prop[0]:
                 return prop[1]  # Yield the desired value and exit the function
 
+def _strip_problematic_price_fields(data, url):
+    """
+    Remove site-specific fields that cause false "multiple price" detections.
+    For example, Coles includes both offer.price (sale) and offer.priceSpecification.price (list).
+
+    Args:
+        data: The extruct data dictionary
+        url: The URL being monitored
+
+    Returns:
+        Modified data with problematic fields removed
+    """
+    from urllib.parse import urlparse
+
+    if not url:
+        return data
+
+    try:
+        hostname = urlparse(url).hostname or ''
+    except Exception:
+        return data
+
+    # Site-specific cleanup rules
+    # Australian retailers (Coles, Woolworths) include priceSpecification.price which causes duplicates:
+    # - Coles: contains list/original price when product is on sale
+    # - Woolworths: contains unit price (per 100ML, per KG, etc.)
+    # In both cases, we want the main offer.price, not the priceSpecification.price
+    if 'coles.com.au' in hostname or 'woolworths.com.au' in hostname:
+        logger.debug(f"Applying Australian retailer price cleanup for {hostname}")
+        if data.get('json-ld'):
+            for item in data.get('json-ld', []):
+                if isinstance(item, dict) and item.get('@type') == 'Product':
+                    offers = item.get('offers', [])
+                    if not isinstance(offers, list):
+                        offers = [offers]
+
+                    for offer in offers:
+                        if isinstance(offer, dict) and 'priceSpecification' in offer:
+                            price_spec = offer.get('priceSpecification', {})
+                            # Only remove UnitPriceSpecification to avoid the nested price
+                            if isinstance(price_spec, dict) and price_spec.get('@type') == 'UnitPriceSpecification':
+                                spec_price = price_spec.get('price')
+                                if spec_price and spec_price != offer.get('price'):
+                                    logger.debug(f"Removing UnitPriceSpecification.price ({spec_price}) to avoid duplicate with offer.price ({offer.get('price')})")
+                                offer.pop('priceSpecification', None)
+
+    return data
+
+
 def _deduplicate_prices(data):
     import re
 
@@ -52,10 +101,14 @@ def _deduplicate_prices(data):
 
 # should return Restock()
 # add casting?
-def get_itemprop_availability(html_content) -> Restock:
+def get_itemprop_availability(html_content, url=None) -> Restock:
     """
     Kind of funny/cool way to find price/availability in one many different possibilities.
     Use 'extruct' to find any possible RDFa/microdata/json-ld data, make a JSON string from the output then search it.
+
+    Args:
+        html_content: The HTML content to extract from
+        url: The URL being monitored (optional, used for site-specific cleanup)
     """
     from jsonpath_ng import parse
 
@@ -76,6 +129,9 @@ def get_itemprop_availability(html_content) -> Restock:
 
     logger.trace(f"Extruct basic extract of all metadata done in {time.time() - now:.3f}s")
 
+    # Apply site-specific cleanup to remove problematic fields
+    data = _strip_problematic_price_fields(data, url)
+
     # First phase, dead simple scanning of anything that looks useful
     value = Restock()
     if data:
@@ -86,10 +142,10 @@ def get_itemprop_availability(html_content) -> Restock:
 
         price_result = _deduplicate_prices(price_parse.find(data))
         if price_result:
-            # Right now, we just support single product items, maybe we will store the whole actual metadata seperately in teh future and
+            # Right now, we just support single product items, maybe we will store the whole actual metadata seperately in the future and
             # parse that for the UI?
-            if len(price_result) > 1 and len(price_result) > 1:
-                # See of all prices are different, in the case that one product has many embedded data types with the same price
+            if len(price_result) > 1:
+                # See if all prices are different, in the case that one product has many embedded data types with the same price
                 # One might have $121.95 and another 121.95 etc
                 logger.warning(f"More than one price found {price_result}, throwing exception, cant use this plugin.")
                 raise MoreThanOnePriceFound()
@@ -188,7 +244,7 @@ class perform_site_check(difference_detection_processor):
 
         itemprop_availability = {}
         try:
-            itemprop_availability = get_itemprop_availability(self.fetcher.content)
+            itemprop_availability = get_itemprop_availability(self.fetcher.content, url=watch.get('url'))
         except MoreThanOnePriceFound as e:
             # Add the real data
             raise ProcessorException(message="Cannot run, more than one price detected, this plugin is only for product pages with ONE product, try the content-change detection mode.",
